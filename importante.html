@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Ramo de Rosas Amarillas 3D</title>
+<style>
+  body { margin: 0; overflow: hidden; background: #1a1a1a; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<script type="module">
+import * as THREE from './libs/three.module.js';
+import { OrbitControls } from './libs/OrbitControls.js';
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x1a1a1a);
+scene.fog = new THREE.FogExp2(0x1a1a1a, 0.05);
+
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(0, 3, 10);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.target.set(0, 0, 0);
+
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambientLight);
+
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+dirLight.position.set(5, 10, 5);
+dirLight.castShadow = true;
+dirLight.shadow.mapSize.width = 2048;
+dirLight.shadow.mapSize.height = 2048;
+dirLight.shadow.camera.near = 0.5;
+dirLight.shadow.camera.far = 50;
+dirLight.shadow.camera.left = -10;
+dirLight.shadow.camera.right = 10;
+dirLight.shadow.camera.top = 10;
+dirLight.shadow.camera.bottom = -10;
+scene.add(dirLight);
+
+const pointLight = new THREE.PointLight(0xffeebb, 0.5, 50);
+pointLight.position.set(2, 5, 2);
+scene.add(pointLight);
+
+const petalMaterial = new THREE.MeshPhysicalMaterial({
+  color: 0xffd700,
+  roughness: 0.35,
+  clearcoat: 1,
+  clearcoatRoughness: 0.15,
+  transmission: 0.5,
+  thickness: 0.5,
+  side: THREE.DoubleSide
+});
+
+const stemMaterial = new THREE.MeshStandardMaterial({ color: 0x339933 });
+const ribbonMaterial = new THREE.MeshStandardMaterial({ color: 0xff4444, metalness: 0.2, roughness: 0.4 });
+const wrapperMaterial = new THREE.MeshPhysicalMaterial({
+  color: 0x0044ff,
+  transparent: true,
+  opacity: 0.45,
+  roughness: 0.2,
+  metalness: 0.1,
+  side: THREE.DoubleSide,
+  reflectivity: 0.5,
+  shininess: 50
+});
+
+function crearPetalos(basePos) {
+  const grupo = new THREE.Group();
+  const centro = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 16), petalMaterial);
+  centro.castShadow = true;
+  grupo.add(centro);
+
+  const puntos = [
+    new THREE.Vector2(0, 0),
+    new THREE.Vector2(0.15, 0.05),
+    new THREE.Vector2(0.2, 0.3),
+    new THREE.Vector2(0.12, 0.45),
+    new THREE.Vector2(0, 0.55)
+  ];
+  const petaloGeo = new THREE.LatheGeometry(puntos, 20);
+
+  for (let capa = 0; capa < 4; capa++) {
+    for (let i = 0; i < 10; i++) {
+      const petalo = new THREE.Mesh(petaloGeo, petalMaterial);
+      petalo.castShadow = true;
+      petalo.receiveShadow = true;
+      petalo.rotation.y = (i / 10) * Math.PI * 2;
+      petalo.rotation.z = Math.PI / 6 + (Math.random() * 0.1);
+      petalo.position.y = 0.15 + capa * 0.05;
+      petalo.scale.set(1 + capa * 0.1, 1 + capa * 0.08, 1);
+      grupo.add(petalo);
+    }
+  }
+
+  grupo.position.copy(basePos);
+  return grupo;
+}
+
+const ramo = new THREE.Group();
+const target = new THREE.Vector3(0, -2.5, 0);
+
+const numRosas = 9;
+function crearRosaConTallo(basePos, target) {
+  const grupo = new THREE.Group();
+  const centro = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), petalMaterial);
+  centro.castShadow = true;
+  grupo.add(centro);
+
+  const puntos = [
+    new THREE.Vector2(0, 0),
+    new THREE.Vector2(0.2, 0.1),
+    new THREE.Vector2(0.25, 0.4),
+    new THREE.Vector2(0.15, 0.6),
+    new THREE.Vector2(0, 0.7)
+  ];
+  const petaloGeo = new THREE.LatheGeometry(puntos, 20);
+
+  for (let capa = 0; capa < 5; capa++) {
+    for (let i = 0; i < 12; i++) {
+      const petalo = new THREE.Mesh(petaloGeo, petalMaterial);
+      petalo.castShadow = true;
+      petalo.receiveShadow = true;
+      petalo.rotation.y = (i / 12) * Math.PI * 2;
+      petalo.rotation.z = Math.PI / 6 + (Math.random() * 0.15);
+      petalo.position.y = 0.2 + capa * 0.05;
+      petalo.scale.set(1 + capa * 0.15, 1 + capa * 0.1, 1);
+      grupo.add(petalo);
+    }
+  }
+
+  const talloAltura = 4;
+  const tallo = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, talloAltura, 12), stemMaterial);
+  tallo.castShadow = true;
+  tallo.receiveShadow = true;
+  tallo.position.y = -talloAltura / 2;
+  const dir = new THREE.Vector3().subVectors(target, basePos).normalize();
+  const ejeY = new THREE.Vector3(0, -1, 0).normalize();
+  const quat = new THREE.Quaternion().setFromUnitVectors(ejeY, dir);
+  tallo.setRotationFromQuaternion(quat);
+  grupo.add(tallo);
+
+  grupo.position.copy(basePos);
+  grupo.castShadow = true;
+  grupo.receiveShadow = true;
+  return grupo;
+}
+
+for (let i = 0; i < numRosas; i++) {
+  const angle = (i / numRosas) * Math.PI * 2;
+  const radius = 0.2;
+  const basePos = new THREE.Vector3(Math.sin(angle) * radius, 0, Math.cos(angle) * radius);
+  const rosa = crearRosaConTallo(basePos, target);
+  ramo.add(rosa);
+}
+
+const rosaCentral = crearRosaConTallo(new THREE.Vector3(0, 0, 0), target);
+ramo.add(rosaCentral);
+
+for (let i = 0; i < 120; i++) {
+  const x = (Math.random() - 0.5) * 2;
+  const y = Math.random() * 0.4;
+  const z = (Math.random() - 0.5) * 2;
+  const rosa = crearPetalos(new THREE.Vector3(x, y, z));
+  ramo.add(rosa);
+}
+
+const cinta = new THREE.Mesh(new THREE.TorusGeometry(0.8, 0.12, 16, 100), ribbonMaterial);
+cinta.castShadow = true;
+cinta.receiveShadow = true;
+cinta.rotation.x = Math.PI / 2;
+cinta.position.y = -2.4;
+ramo.add(cinta);
+
+function crearMoño(offsetX) {
+  const moño = new THREE.Mesh(new THREE.SphereGeometry(0.3, 16, 16, 0, Math.PI), ribbonMaterial);
+  moño.castShadow = true;
+  moño.receiveShadow = true;
+  moño.scale.set(1.2, 0.6, 0.3);
+  moño.position.set(offsetX, -2.4, 0);
+  return moño;
+}
+ramo.add(crearMoño(1));
+ramo.add(crearMoño(-1));
+
+const envoltorio = new THREE.Mesh(new THREE.ConeGeometry(1.5, 4.5, 32, 1, true), wrapperMaterial);
+envoltorio.castShadow = true;
+envoltorio.receiveShadow = true;
+envoltorio.position.y = -1.5;
+envoltorio.rotation.x = Math.PI;
+ramo.add(envoltorio);
+
+const envoltorio2 = new THREE.Mesh(new THREE.ConeGeometry(1.8, 3, 32, 1, true), wrapperMaterial);
+envoltorio2.castShadow = true;
+envoltorio2.receiveShadow = true;
+envoltorio2.position.y = -2.8;
+envoltorio2.rotation.x = Math.PI;
+ramo.add(envoltorio2);
+
+ramo.position.y = 0;
+scene.add(ramo);
+
+const particleGeometry = new THREE.BufferGeometry();
+const particleCount = 200;
+const positions = new Float32Array(particleCount * 3);
+for (let i = 0; i < particleCount; i++) {
+  positions[i * 3] = (Math.random() - 0.5) * 20;
+  positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+  positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+}
+particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+const particleMaterial = new THREE.PointsMaterial({
+  color: 0xffeebb,
+  size: 0.1,
+  sizeAttenuation: true,
+  transparent: true,
+  opacity: 0.8
+});
+const particles = new THREE.Points(particleGeometry, particleMaterial);
+scene.add(particles);
+
+function animate(time) {
+  requestAnimationFrame(animate);
+  controls.update();
+  ramo.rotation.y = Math.sin(time * 0.0002) * 0.1;
+  particles.rotation.y += 0.0005;
+  particles.rotation.x += 0.0003;
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>

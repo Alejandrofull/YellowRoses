@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¡Sorpresa Épica!</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Major+Mono+Display&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Electrolize&display=swap');
+
+:root {
+  --glitch-color-1: #ffeb3b;
+  --glitch-color-2: #ff9800;
+  --glitch-color-3: #ffc107;
+  --glitch-text-shadow: 0 0 5px var(--glitch-color-1), 0 0 15px var(--glitch-color-2);
+  --btn-glow-1: #ffeb3b;
+  --btn-glow-2: #ff9800;
+  --bg-gradient-1: #1a1a1a;
+  --bg-gradient-2: #3a2a00;
+  --bg-gradient-3: #1a1a1a;
+  --button-hover-scale: 1.1;
+  --button-transition-time: 0.4s;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Electrolize', sans-serif;
+  background: radial-gradient(circle at 50% 50%, var(--bg-gradient-1), var(--bg-gradient-2), var(--bg-gradient-3));
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  transition: opacity 1.5s ease;
+  perspective: 1200px;
+}
+
+body.fade-out {
+  opacity: 0;
+}
+
+.glitch-text-container {
+  position: relative;
+  font-family: 'Major Mono Display', monospace;
+  font-size: 5vw;
+  font-weight: 700;
+  letter-spacing: 0.2vw;
+  text-align: center;
+  padding: 0.5vw;
+  user-select: none;
+  z-index: 10;
+  pointer-events: none;
+  margin-bottom: 3vw;
+}
+
+.glitch-text {
+  position: relative;
+  transform: scale(0.9);
+  opacity: 0;
+  animation: textIntro 2.5s cubic-bezier(0.68,-0.55,0.27,1.55) forwards;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  text-shadow: var(--glitch-text-shadow);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.glitch-text::before {
+  left: 0.3vw;
+  color: var(--glitch-color-1);
+  animation: glitch-before 2s infinite linear alternate-reverse;
+}
+
+.glitch-text::after {
+  left: -0.3vw;
+  color: var(--glitch-color-2);
+  animation: glitch-after 3s infinite linear alternate-reverse;
+}
+
+@keyframes textIntro {
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes glitch-before {
+  0% { transform: translate(0.5%, -0.5%); clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+  25% { transform: translate(-0.8%, 0.8%); clip-path: polygon(0 20%, 100% 20%, 100% 80%, 0 80%); }
+  50% { transform: translate(0.2%, -0.2%); clip-path: polygon(0 40%, 100% 40%, 100% 60%, 0 60%); }
+  75% { transform: translate(-0.4%, 0.4%); clip-path: polygon(0 60%, 100% 60%, 100% 40%, 0 40%); }
+  100% { transform: translate(0.1%, -0.1%); clip-path: polygon(0 80%, 100% 80%, 100% 20%, 0 20%); }
+}
+
+@keyframes glitch-after {
+  0% { transform: translate(-0.8%, 0.8%); clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+  25% { transform: translate(0.4%, -0.4%); clip-path: polygon(0 80%, 100% 80%, 100% 20%, 0 20%); }
+  50% { transform: translate(-0.2%, 0.2%); clip-path: polygon(0 40%, 100% 40%, 100% 60%, 0 60%); }
+  75% { transform: translate(0.6%, -0.6%); clip-path: polygon(0 20%, 100% 20%, 100% 80%, 0 80%); }
+  100% { transform: translate(-0.5%, 0.5%); clip-path: polygon(0 60%, 100% 60%, 100% 40%, 0 40%); }
+}
+
+.button-container {
+  position: relative;
+  z-index: 10;
+  transform: translateY(100px) scale(0.7);
+  opacity: 0;
+  animation: buttonIntro 2.5s cubic-bezier(0.68,-0.55,0.27,1.55) 1s forwards;
+}
+
+.button-press-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  transform: translate(-50%, -50%) scale(0.5);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.5s cubic-bezier(0.1, 0.9, 0.2, 1.1), opacity 0.5s ease;
+}
+
+.button-press-effect.active {
+  animation: buttonPressAnim 0.8s forwards;
+}
+
+@keyframes buttonPressAnim {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0.8; }
+  100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
+}
+
+@keyframes buttonIntro {
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.btn {
+  padding: 1.5vw 4vw;
+  font-size: 2.2vw;
+  font-weight: 700;
+  border-radius: 9999px;
+  border: 2px solid var(--btn-glow-1);
+  cursor: pointer;
+  background: linear-gradient(145deg, rgba(255, 235, 59, 0.2), rgba(255, 152, 0, 0.2));
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 20px var(--btn-glow-1), 0 0 40px var(--btn-glow-2), inset 0 0 10px var(--btn-glow-1);
+  transition: all var(--button-transition-time) ease-in-out;
+  transform-style: preserve-3d;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn:hover {
+  transform: scale(var(--button-hover-scale)) rotateX(5deg) rotateY(-5deg);
+  box-shadow: 0 0 30px var(--btn-glow-1), 0 0 60px var(--btn-glow-2), inset 0 0 20px var(--btn-glow-1);
+}
+
+.btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 0 10px var(--btn-glow-1), 0 0 20px var(--btn-glow-2), inset 0 0 5px var(--btn-glow-1);
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+
+.btn:hover::before {
+  transform: translateX(100%);
+}
+
+#particle-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.background-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80vw;
+  height: 80vw;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 235, 59, 0.1), rgba(255, 152, 0, 0.1), transparent 70%);
+  z-index: 0;
+  animation: bgGlowAnim 20s infinite alternate-reverse;
+}
+
+@keyframes bgGlowAnim {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+  100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.5; }
+}
+
+.scanline-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.1) 0,
+    rgba(255, 255, 255, 0.05) 1px,
+    transparent 2px,
+    transparent 4px
+  );
+  pointer-events: none;
+  z-index: 100;
+}
+</style>
+</head>
+<body>
+
+<div class="background-glow"></div>
+<canvas id="particle-canvas"></canvas>
+<div class="scanline-overlay"></div>
+
+<div class="glitch-text-container">
+  <h1 class="glitch-text" data-text="¡Tienes un regalo!">¡Tienes un regalo!</h1>
+</div>
+
+<div class="button-container">
+  <button class="btn" id="btnAcceso">Abrir</button>
+  <div class="button-press-effect"></div>
+</div>
+
+<script>
+const canvas = document.getElementById('particle-canvas');
+const ctx = canvas.getContext('2d');
+const btn = document.getElementById('btnAcceso');
+const buttonEffect = document.querySelector('.button-press-effect');
+const glitchText = document.querySelector('.glitch-text');
+const body = document.body;
+
+let particles = [];
+let mouse = { x: null, y: null };
+let isButtonActive = false;
+let mouseEffectStrength = 0;
+
+function setCanvasSize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+window.addEventListener('resize', setCanvasSize);
+window.addEventListener('load', setCanvasSize);
+
+function getRandomColor() {
+  const colors = ['#ffeb3b', '#ffc107', '#ff9800'];
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+
+class Particle {
+  constructor(x, y, vx, vy, size, color) {
+    this.x = x;
+    this.y = y;
+    this.vx = vx;
+    this.vy = vy;
+    this.size = size;
+    this.color = color;
+    this.life = 1;
+    this.decay = Math.random() * 0.008 + 0.003;
+    this.friction = 0.98;
+  }
+  
+  update() {
+    this.vx *= this.friction;
+    this.vy *= this.friction;
+    this.x += this.vx;
+    this.y += this.vy;
+    this.life -= this.decay;
+    this.size *= 0.995;
+    this.vy += 0.01;
+  }
+  
+  draw() {
+    ctx.globalAlpha = Math.max(0, this.life);
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+function spawnParticle(x, y, isExplosion = false) {
+  let vx, vy;
+  let size;
+  let color;
+
+  if (isExplosion) {
+    vx = (Math.random() - 0.5) * 20;
+    vy = (Math.random() - 0.5) * 20;
+    size = Math.random() * 10 + 5;
+    color = getRandomColor();
+  } else {
+    vx = (Math.random() - 0.5) * 2;
+    vy = (Math.random() - 0.5) * 2;
+    size = Math.random() * 3 + 1;
+    color = 'rgba(255, 255, 255, 0.4)';
+  }
+  particles.push(new Particle(x, y, vx, vy, size, color));
+}
+
+function handleMouseSpawn() {
+  if (mouse.x !== null && mouse.y !== null && mouseEffectStrength > 0) {
+    for (let i = 0; i < Math.floor(mouseEffectStrength); i++) {
+      spawnParticle(mouse.x + (Math.random() - 0.5) * 30, mouse.y + (Math.random() - 0.5) * 30);
+    }
+  }
+}
+
+function animateParticles() {
+  ctx.fillStyle = 'rgba(26, 26, 26, 0.1)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const particle = particles[i];
+    particle.update();
+    particle.draw();
+    if (particle.life <= 0 || particle.size <= 0.5) {
+      particles.splice(i, 1);
+    }
+  }
+
+  handleMouseSpawn();
+  
+  requestAnimationFrame(animateParticles);
+}
+
+function createExplosion(x, y, count) {
+  for (let i = 0; i < count; i++) {
+    spawnParticle(x, y, true);
+  }
+}
+
+btn.addEventListener('mouseenter', () => {
+  mouseEffectStrength = 2;
+});
+
+btn.addEventListener('mouseleave', () => {
+  mouseEffectStrength = 0;
+});
+
+btn.addEventListener('mousemove', (e) => {
+  const rect = e.target.getBoundingClientRect();
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+});
+
+document.body.addEventListener('mousemove', (e) => {
+  if (!isButtonActive) {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+    mouseEffectStrength = 0.8;
+  }
+});
+
+btn.addEventListener('click', (e) => {
+  if (isButtonActive) return;
+  isButtonActive = true;
+  
+  const rect = e.target.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+  
+  createExplosion(centerX, centerY, 700);
+  
+  buttonEffect.style.transform = `translate(-50%, -50%) scale(0.5)`;
+  buttonEffect.style.opacity = 0.8;
+  setTimeout(() => {
+    buttonEffect.style.transform = `translate(-50%, -50%) scale(2.5)`;
+    buttonEffect.style.opacity = 0;
+  }, 10);
+  
+  glitchText.classList.add('hide');
+  btn.classList.add('hide');
+
+  const container = document.querySelector('.button-container');
+  container.style.animation = 'none';
+  container.style.transition = 'opacity 1s ease';
+  container.style.opacity = 0;
+
+  document.querySelector('.glitch-text-container').style.opacity = 0;
+
+  setTimeout(() => {
+    body.classList.add('fade-out');
+  }, 1200);
+
+  setTimeout(() => {
+    location.href = 'importante.html';
+  }, 2700);
+});
+
+for(let i=0; i < 150; i++) {
+  spawnParticle(Math.random() * canvas.width, Math.random() * canvas.height);
+}
+
+animateParticles();
+
+</script>
+
+</body>
+</html>
